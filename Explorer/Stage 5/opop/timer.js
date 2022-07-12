@@ -1,9 +1,15 @@
-export function Timer({
+import audios from './sounds.js'
+
+const audio = audios()
+
+export default function timer({
   displayMinutes,
   displaySeconds,
-  resetButtons,
-  timerTimeOut
+  resetButtons
 }) {
+  let timerTimeOut
+  let minutes = Number(displayMinutes.textContent)
+
   function resetTimer() {
     clearTimeout(timerTimeOut)
     displayTimerUpdate(minutes, 0)
@@ -12,17 +18,20 @@ export function Timer({
     timerTimeOut = setTimeout(function () {
       let seconds = Number(displaySeconds.textContent)
       let minutes = Number(displayMinutes.textContent)
+      let isFinished = minutes <= 0 && seconds <= 0
 
-      displaySeconds.textContent = '00'
+      displayTimerUpdate(minutes, 0)
 
-      if (minutes <= 0) {
+      if (isFinished) {
         resetButtons()
+        displayTimerUpdate()
+        audio.timeEnd()
 
         return
       }
 
       if (seconds <= 0) {
-        seconds = 2
+        seconds = 60
 
         --minutes
       }
@@ -33,13 +42,25 @@ export function Timer({
     }, 1000)
   }
 
-  function displayTimerUpdate(minutes, seconds) {
-    displayMinutes.textContent = String(minutes).padStart(2, '0')
+  function displayTimerUpdate(newMinutes, seconds) {
+    newMinutes = newMinutes === undefined ? minutes : newMinutes
+    seconds = seconds === undefined ? 0 : seconds
+    displayMinutes.textContent = String(newMinutes).padStart(2, '0')
     displaySeconds.textContent = String(seconds).padStart(2, '0')
+  }
+
+  function updateMinutes(newMinutes) {
+    minutes = newMinutes
+  }
+  function hold() {
+    clearTimeout(timerTimeOut)
   }
   return {
     countDown,
     resetTimer,
-    resetButtons
+    resetButtons,
+    displayTimerUpdate,
+    updateMinutes,
+    hold
   }
 }

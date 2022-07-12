@@ -1,70 +1,71 @@
-import { Timer } from './timer.js'
-
-import resetButtons from './option.js'
+import timerlib from './timer.js'
+import optionslib from './option.js'
+import audios from './sounds.js'
+import {
+  buttonMute,
+  buttonPause,
+  buttonPlay,
+  buttonUnmute,
+  buttonStop,
+  buttonSets,
+  displayMinutes,
+  displaySeconds
+} from './elementes.js'
 
 //DOM
 
-const buttonPlay = document.querySelector('.play')
-const buttonPause = document.querySelector('.pause')
-const buttonMute = document.querySelector('.mute')
-const buttonUnmute = document.querySelector('.unmute')
-const buttonStop = document.querySelector('.stop')
-const buttonSets = document.querySelector('.sets')
-const displayMinutes = document.querySelector('.minutes')
-const displaySeconds = document.querySelector('.seconds')
-let minutes = Number(displayMinutes.textContent)
-let timerTimeOut
+const options = optionslib({ buttonPause, buttonPlay, buttonSets, buttonStop })
 
-const conftimer = {
+const timer = timerlib({
   displayMinutes,
   displaySeconds,
-  resetButtons,
-  timerTimeOut
-}
-const timer = Timer(conftimer)
+  resetButtons: options.reset
+})
+
+const audio = audios()
 
 // Event-driven (direcionada a eventos)
 // programação imperativa
 // callback
 
 buttonPlay.addEventListener('click', function () {
-  buttonPlay.classList.add('hide')
-  buttonPause.classList.remove('hide')
-  buttonSets.classList.add('hide')
-  buttonStop.classList.remove('hide')
-
+  options.play()
   timer.countDown()
+  audio.pressButton()
 })
 
 buttonPause.addEventListener('click', function () {
-  buttonPlay.classList.remove('hide')
-  buttonPause.classList.add('hide')
-  clearTimeout(timerTimeOut)
+  options.pause()
+  timer.hold()
+  audio.pressButton()
 })
 
 buttonStop.addEventListener('click', function () {
-  resetButtons()
-  timer.resetTimer(minutes, 0)
+  options.reset()
+  timer.resetTimer()
+  audio.pressButton()
 })
 
 buttonUnmute.addEventListener('click', function () {
   buttonMute.classList.remove('hide')
   buttonUnmute.classList.add('hide')
+  audio.bgAudio.play()
 })
 
 buttonMute.addEventListener('click', function () {
   buttonMute.classList.add('hide')
   buttonUnmute.classList.remove('hide')
+  audio.bgAudio.pause()
 })
 
 buttonSets.addEventListener('click', function () {
-  let newMinutes = prompt('Quantos minutos?')
+  let newMinutes = options.getMinutes()
 
   if (!newMinutes) {
     timer.resetTimer()
     return
   }
 
-  minutes = newMinutes
-  displayTimerUpdate(minutes, 0)
+  timer.displayTimerUpdate(newMinutes, 0)
+  timer.updateMinutes(newMinutes)
 })
